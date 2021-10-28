@@ -78,12 +78,13 @@ def send_ai_email(subject: str, body: str, recipient: str,
         password = config['pass']
         host = config['host']
         port = config['port']
-    except TypeError or KeyError:
+    except (TypeError, KeyError):
         LOG.error(f"Invalid Config: {config}")
         raise RuntimeError("Invalid email auth config")
     LOG.debug(f"send {subject} to {recipient}")
     try:
         with yagmail.SMTP(mail, password, host, port) as yag:
             yag.send(to=recipient, subject=subject, contents=body, attachments=attachments)
-    except SMTPAuthenticationError:
+    except SMTPAuthenticationError as e:
         LOG.error(f"Invalid credentials provided in config: {config}")
+        raise e

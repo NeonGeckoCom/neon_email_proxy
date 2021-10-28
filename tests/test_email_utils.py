@@ -45,9 +45,16 @@ class TestEmailUtils(unittest.TestCase):
                 original_contents = original.read()
             self.assertEqual(att_contents, original_contents)
 
-    def test_send_ai_email_invalid_auth(self):
+    def test_send_ai_email_invalid(self):
+        with self.assertRaises(RuntimeError):
+            send_ai_email("Testing", "This is an automated unit test", "daniel@neongecko.com",
+                          email_config={"mail": "daniel@neongecko.com"})
         with self.assertRaises(SMTPAuthenticationError):
-            send_ai_email("Testing", "This is an automated unit test", "daniel@neongecko.com")
+            send_ai_email("Testing", "This is an automated unit test", "daniel@neongecko.com",
+                          email_config={"mail": "daniel@neongecko.com",
+                                        "pass": "",
+                                        "host": "smtp.gmail.com",
+                                        "port": "465"})
 
 
 if __name__ == '__main__':
