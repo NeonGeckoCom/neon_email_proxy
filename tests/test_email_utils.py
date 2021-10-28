@@ -26,7 +26,7 @@ from mycroft_bus_client import Message
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from neon_email_proxy.email_utils import *
 
-test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_cache_files")
+test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_email_attachments")
 
 
 class TestEmailUtils(unittest.TestCase):
@@ -45,9 +45,24 @@ class TestEmailUtils(unittest.TestCase):
                 original_contents = original.read()
             self.assertEqual(att_contents, original_contents)
 
-    def test_send_ai_email_invalid_auth(self):
+    def test_write_out_email_attachments_empty(self):
+        attachments = {"test": None}
+        files = write_out_email_attachments(Message("test", {"email": "test@neongecko.com",
+                                                             "title": "Test Email Title",
+                                                             "body": "Test Email Body",
+                                                             "attachments": attachments}))
+        self.assertEqual(files, list())
+
+    def test_send_ai_email_invalid(self):
+        with self.assertRaises(RuntimeError):
+            send_ai_email("Testing", "This is an automated unit test", "daniel@neongecko.com",
+                          email_config={"mail": "daniel@neongecko.com"})
         with self.assertRaises(SMTPAuthenticationError):
-            send_ai_email("Testing", "This is an automated unit test", "daniel@neongecko.com")
+            send_ai_email("Testing", "This is an automated unit test", "daniel@neongecko.com",
+                          email_config={"mail": "daniel@neongecko.com",
+                                        "pass": "invalid",
+                                        "host": "smtp.gmail.com",
+                                        "port": "465"})
 
 
 if __name__ == '__main__':
