@@ -62,7 +62,8 @@ def write_out_email_attachments(message) -> list:
     return att_files
 
 
-def send_ai_email(subject: str, body: str, recipient: str, attachments: Optional[list] = None, email_config: dict = None):
+def send_ai_email(subject: str, body: str, recipient: str,
+                  attachments: Optional[list] = None, email_config: dict = None):
     """
     Send an email to a user. Email config may be provided or read from configuration
     :param subject: Email subject
@@ -72,10 +73,14 @@ def send_ai_email(subject: str, body: str, recipient: str, attachments: Optional
     :param email_config: Optional SMTP config to use as sender
     """
     config = email_config or CONFIG
-    mail = config['mail']
-    password = config['pass']
-    host = config['host']
-    port = config['port']
+    try:
+        mail = config['mail']
+        password = config['pass']
+        host = config['host']
+        port = config['port']
+    except TypeError or KeyError:
+        LOG.error(f"Invalid Config: {config}")
+        raise RuntimeError("Invalid email auth config")
     LOG.debug(f"send {subject} to {recipient}")
     try:
         with yagmail.SMTP(mail, password, host, port) as yag:
