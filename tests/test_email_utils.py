@@ -26,7 +26,7 @@ from mycroft_bus_client import Message
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from neon_email_proxy.email_utils import *
 
-test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_cache_files")
+test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_email_attachments")
 
 
 class TestEmailUtils(unittest.TestCase):
