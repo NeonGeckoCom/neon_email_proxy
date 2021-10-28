@@ -42,7 +42,8 @@ class NeonEmailConnector(MQConnector):
     @staticmethod
     def handle_send_email(**kwargs):
         try:
-            send_ai_email(**kwargs)
+            send_ai_email(kwargs["subject"], kwargs["body"], kwargs["recipient"],
+                          kwargs.get("attachments"), kwargs.get("email_config"))
             return {"success": True}
         except Exception as e:
             LOG.error(e)

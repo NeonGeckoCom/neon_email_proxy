@@ -62,13 +62,13 @@ def write_out_email_attachments(message) -> list:
     return att_files
 
 
-def send_ai_email(title: str, body: str, recipient: str, att_files: Optional[list] = None, email_config: dict = None):
+def send_ai_email(subject: str, body: str, recipient: str, attachments: Optional[list] = None, email_config: dict = None):
     """
     Send an email to a user. Email config may be provided or read from configuration
-    :param title: Email subject
+    :param subject: Email subject
     :param body: Email body
     :param recipient: Recipient email address (or list of email addresses)
-    :param att_files: Optional list of attachment file paths
+    :param attachments: Optional list of attachment file paths
     :param email_config: Optional SMTP config to use as sender
     """
     config = email_config or CONFIG
@@ -76,9 +76,9 @@ def send_ai_email(title: str, body: str, recipient: str, att_files: Optional[lis
     password = config['pass']
     host = config['host']
     port = config['port']
-    LOG.debug(f"send {title} to {recipient}")
+    LOG.debug(f"send {subject} to {recipient}")
     try:
         with yagmail.SMTP(mail, password, host, port) as yag:
-            yag.send(to=recipient, subject=title, contents=body, attachments=att_files)
+            yag.send(to=recipient, subject=subject, contents=body, attachments=attachments)
     except SMTPAuthenticationError:
         LOG.error(f"Invalid credentials provided in config: {config}")
