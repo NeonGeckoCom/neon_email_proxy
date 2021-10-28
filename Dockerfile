@@ -1,7 +1,7 @@
 FROM python:3.8
 
-ADD . /neon_brands_service
-WORKDIR /neon_brands_service
+ADD . /neon_email_proxy
+WORKDIR /neon_email_proxy
 RUN apt-get update && \
     apt-get install -y \
     gcc \
