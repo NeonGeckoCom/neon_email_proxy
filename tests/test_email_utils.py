@@ -45,6 +45,14 @@ class TestEmailUtils(unittest.TestCase):
                 original_contents = original.read()
             self.assertEqual(att_contents, original_contents)
 
+    def test_write_out_email_attachments_empty(self):
+        attachments = {"test": None}
+        files = write_out_email_attachments(Message("test", {"email": "test@neongecko.com",
+                                                             "title": "Test Email Title",
+                                                             "body": "Test Email Body",
+                                                             "attachments": attachments}))
+        self.assertEqual(files, list())
+
     def test_send_ai_email_invalid(self):
         with self.assertRaises(RuntimeError):
             send_ai_email("Testing", "This is an automated unit test", "daniel@neongecko.com",

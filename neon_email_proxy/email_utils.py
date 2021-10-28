@@ -22,7 +22,7 @@ import yagmail
 
 from os import path
 from typing import Optional
-from tempfile import gettempdir
+from tempfile import mkdtemp
 from neon_utils.file_utils import decode_base64_string_to_file
 from neon_utils.logger import LOG
 from neon_utils.configuration_utils import NGIConfig
@@ -48,17 +48,13 @@ def write_out_email_attachments(message) -> list:
     # Write out attachment message data to files
     if attachments:
         LOG.debug("Handling attachments")
-        try:
-            for att_name, data in attachments.items():
-                if not data:
-                    continue
-                temp_dir = gettempdir()
-                file_name = path.join(temp_dir, att_name)
-                filename = decode_base64_string_to_file(data, file_name)
-                att_files.append(filename)
-        except Exception as e:
-            LOG.error(e)
-            LOG.error(attachments.keys())
+        for att_name, data in attachments.items():
+            if not data:
+                continue
+            temp_dir = mkdtemp()
+            file_name = path.join(temp_dir, att_name)
+            filename = decode_base64_string_to_file(data, file_name)
+            att_files.append(filename)
     return att_files
 
 
