@@ -52,7 +52,7 @@ class TestEmailUtils(unittest.TestCase):
         with self.assertRaises(SMTPAuthenticationError):
             send_ai_email("Testing", "This is an automated unit test", "daniel@neongecko.com",
                           email_config={"mail": "daniel@neongecko.com",
-                                        "pass": "",
+                                        "pass": "invalid",
                                         "host": "smtp.gmail.com",
                                         "port": "465"})
 
