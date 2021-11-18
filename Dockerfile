@@ -10,11 +10,6 @@ RUN apt-get update && \
     && pip install wheel  \
     && pip install .
 
-WORKDIR /config
-
-ENV NEON_MQ_PROXY_CONFIG_PATH /config/config.json
 ENV NEON_CONFIG_PATH /config
-RUN mkdir ~/.config && \
-    ln -s /config ~/.config/neon
 
 CMD ["neon_email_proxy"]

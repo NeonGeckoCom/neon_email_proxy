@@ -14,14 +14,12 @@ dict of attachments should map string attachment names to string base-64 encoded
 >}
 >```
 
-## Response Format
-Responses will be returned as dictionaries containing:
-- `success` - Bool indicating if the request was successfully handled
-
 ## Docker Configuration
-When running this as a docker container, the path to configuration files should be mounted to `/config`.
+When running this as a docker container, the path to configuration files should be mounted to `/config`. This container 
+expects `mq_config.json` to contain service `neon_email_proxy` and `ngi_auth_vars.yml` to contain dict `emails`.
 
 For example, if your configuration resides in `~/.config`:
 ```shell
-docker run -v /home/$USER/.config:/config neon_email_proxy
+export CONFIG_PATH="/home/${USER}/.config"
+docker run -v ${CONFIG_PATH}:/config neon_email_proxy
 ```
