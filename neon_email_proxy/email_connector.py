@@ -19,17 +19,18 @@
 
 import pika.channel
 
+from typing import Optional
 from neon_utils import LOG
 from neon_utils.socket_utils import b64_to_dict, dict_to_b64
 
 from neon_email_proxy.email_utils import send_ai_email
-from neon_mq_connector.connector import MQConnector, ConsumerThread
+from neon_mq_connector.connector import MQConnector
 
 
 class NeonEmailConnector(MQConnector):
     """Adapter for establishing connection between Neon API and MQ broker"""
 
-    def __init__(self, config: dict, service_name: str):
+    def __init__(self, config: Optional[dict], service_name: str):
         """
             Additionally accepts message bus connection properties
 
@@ -50,16 +51,16 @@ class NeonEmailConnector(MQConnector):
             return {"success": False}
 
     def handle_email_request(self,
-                              channel: pika.channel.Channel,
-                              method: pika.spec.Basic.Deliver,
-                              properties: pika.spec.BasicProperties,
-                              body: bytes):
+                             channel: pika.channel.Channel,
+                             method: pika.spec.Basic.Deliver,
+                             _: pika.spec.BasicProperties,
+                             body: bytes):
         """
             Handles input requests from MQ to Neon API
 
             :param channel: MQ channel object (pika.channel.Channel)
             :param method: MQ return method (pika.spec.Basic.Deliver)
-            :param properties: MQ properties (pika.spec.BasicProperties)
+            :param _: MQ properties (pika.spec.BasicProperties)
             :param body: request body (bytes)
         """
         message_id = None
@@ -87,12 +88,11 @@ class NeonEmailConnector(MQConnector):
             LOG.error(e)
 
     def handle_error(self, thread, exception):
-        LOG.error(exception)
+        LOG.error(f"{exception} in {thread}")
         LOG.info(f"Restarting Consumers")
         self.stop_consumers()
         self.run()
 
-    def run(self):
+    def pre_run(self, **kwargs):
         self.register_consumer("neon_emails_consumer", self.vhost, 'neon_emails_input',
                                self.handle_email_request, auto_ack=False)
-        self.run_consumers()
