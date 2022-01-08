@@ -23,18 +23,18 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-from smtplib import SMTPAuthenticationError
 
 import yagmail
 
+from smtplib import SMTPAuthenticationError
 from os import path
 from typing import Optional
 from tempfile import mkdtemp
 from neon_utils.file_utils import decode_base64_string_to_file
 from neon_utils.logger import LOG
-from neon_utils.configuration_utils import NGIConfig
+from neon_utils.configuration_utils import get_neon_auth_config
 
-CONFIG = NGIConfig("ngi_auth_vars")["emails"]
+CONFIG = get_neon_auth_config()["emails"]
 
 
 def write_out_email_attachments(message) -> list:
