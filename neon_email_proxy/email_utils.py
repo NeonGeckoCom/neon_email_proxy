@@ -1,7 +1,9 @@
-# NEON AI (TM) SOFTWARE, Software Development Kit & Application Development System
+# NEON AI (TM) SOFTWARE, Software Development Kit & Application Framework
 # All trademark and other rights reserved by their respective owners
-# Copyright 2008-2021 Neongecko.com Inc.
-# BSD-3
+# Copyright 2008-2022 Neongecko.com Inc.
+# Contributors: Daniel McKnight, Guy Daniels, Elon Gasper, Richard Leeds,
+# Regina Bloomstine, Casimiro Ferreira, Andrii Pernatii, Kirill Hrymailo
+# BSD-3 License
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 # 1. Redistributions of source code must retain the above copyright notice,
@@ -23,18 +25,18 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-from smtplib import SMTPAuthenticationError
 
 import yagmail
 
+from smtplib import SMTPAuthenticationError
 from os import path
 from typing import Optional
 from tempfile import mkdtemp
 from neon_utils.file_utils import decode_base64_string_to_file
 from neon_utils.logger import LOG
-from neon_utils.configuration_utils import NGIConfig
+from neon_utils.configuration_utils import get_neon_auth_config
 
-CONFIG = NGIConfig("ngi_auth_vars")["emails"]
+CONFIG = get_neon_auth_config()["emails"]
 
 
 def write_out_email_attachments(message) -> list:
