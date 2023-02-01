@@ -34,25 +34,18 @@ from typing import Optional
 from tempfile import mkdtemp
 from neon_utils.file_utils import decode_base64_string_to_file
 from neon_utils.logger import LOG
-from neon_utils.configuration_utils import get_neon_auth_config
+from neon_utils.configuration_utils import NGIConfig, init_config_dir
 
-CONFIG = get_neon_auth_config()["emails"]
+init_config_dir()
+CONFIG = NGIConfig("ngi_auth_vars").get("emails")
 
 
-def write_out_email_attachments(message) -> list:
+def write_out_email_attachments(attachments: dict) -> list:
     """
-    Write out email attachments from the passed message and return the list of written files
-    :param message: Message associated with email request
+    Write out email attachments to local files
+    :param attachments: dict of attachment file names to string-encoded bytes
     :return: list of paths to attachment files
     """
-    email = message.data["email"]
-    title = message.data["title"]
-    body = message.data["body"]
-    attachments = message.data.get("attachments")
-
-    LOG.debug(f"Send {title} to {email}:")
-    LOG.debug(body)
-
     att_files = []
     # Write out attachment message data to files
     if attachments:
@@ -70,7 +63,7 @@ def write_out_email_attachments(message) -> list:
 def send_ai_email(subject: str, body: str, recipient: str,
                   attachments: Optional[list] = None, email_config: dict = None):
     """
-    Send an email to a user. Email config may be provided or read from configuration
+    Email a user. Email config may be provided or read from configuration
     :param subject: Email subject
     :param body: Email body
     :param recipient: Recipient email address (or list of email addresses)
@@ -89,7 +82,8 @@ def send_ai_email(subject: str, body: str, recipient: str,
     LOG.debug(f"send {subject} to {recipient}")
     try:
         with yagmail.SMTP(mail, password, host, port) as yag:
-            yag.send(to=recipient, subject=subject, contents=body, attachments=attachments)
+            yag.send(to=recipient, subject=subject, contents=body,
+                     attachments=attachments)
     except SMTPAuthenticationError as e:
         LOG.error(f"Invalid credentials provided in config: {config}")
         raise e
