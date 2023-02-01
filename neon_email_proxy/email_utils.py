@@ -36,7 +36,7 @@ from neon_utils.file_utils import decode_base64_string_to_file
 from neon_utils.logger import LOG
 from neon_utils.configuration_utils import NGIConfig
 
-CONFIG = NGIConfig("ngi_auth_vars").get("emails")
+CONFIG = NGIConfig("ngi_auth_vars", "/config").get("emails")
 
 
 def write_out_email_attachments(attachments: dict) -> list:
