@@ -34,9 +34,10 @@ from typing import Optional
 from tempfile import mkdtemp
 from neon_utils.file_utils import decode_base64_string_to_file
 from neon_utils.logger import LOG
-from neon_utils.configuration_utils import NGIConfig
+from neon_utils.configuration_utils import NGIConfig, init_config_dir
 
-CONFIG = NGIConfig("ngi_auth_vars", "/config").get("emails")
+init_config_dir()
+CONFIG = NGIConfig("ngi_auth_vars").get("emails")
 
 
 def write_out_email_attachments(attachments: dict) -> list:
