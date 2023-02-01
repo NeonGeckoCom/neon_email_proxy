@@ -35,44 +35,45 @@ from mycroft_bus_client import Message
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from neon_email_proxy.email_utils import *
 
-test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_email_attachments")
+test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         "test_email_attachments")
 
 
 class TestEmailUtils(unittest.TestCase):
     def test_write_out_email_attachments(self):
         from neon_utils.file_utils import encode_file_to_base64_string
-        attachments = {file: encode_file_to_base64_string(os.path.join(test_path, file))
-                       for file in os.listdir(test_path)}
-        files = write_out_email_attachments(Message("test", {"email": "test@neongecko.com",
-                                                             "title": "Test Email Title",
-                                                             "body": "Test Email Body",
-                                                             "attachments": attachments}))
+        attachments = {
+            file: encode_file_to_base64_string(os.path.join(test_path, file))
+            for file in os.listdir(test_path)}
+        files = write_out_email_attachments(attachments)
         for file in files:
             with open(file) as attachment:
                 att_contents = attachment.read()
-            with open(os.path.join(test_path, os.path.basename(file))) as original:
+            with open(os.path.join(test_path,
+                                   os.path.basename(file))) as original:
                 original_contents = original.read()
             self.assertEqual(att_contents, original_contents)
 
     def test_write_out_email_attachments_empty(self):
         attachments = {"test": None}
-        files = write_out_email_attachments(Message("test", {"email": "test@neongecko.com",
-                                                             "title": "Test Email Title",
-                                                             "body": "Test Email Body",
-                                                             "attachments": attachments}))
+        files = write_out_email_attachments(attachments)
         self.assertEqual(files, list())
 
     def test_send_ai_email_invalid(self):
         with self.assertRaises(RuntimeError):
-            send_ai_email("Testing", "This is an automated unit test", "daniel@neongecko.com",
+            send_ai_email("Testing", "This is an automated unit test",
+                          "daniel@neongecko.com",
                           email_config={"mail": "daniel@neongecko.com"})
         with self.assertRaises(SMTPAuthenticationError):
-            send_ai_email("Testing", "This is an automated unit test", "daniel@neongecko.com",
+            send_ai_email("Testing", "This is an automated unit test",
+                          "daniel@neongecko.com",
                           email_config={"mail": "daniel@neongecko.com",
                                         "pass": "invalid",
                                         "host": "smtp.gmail.com",
                                         "port": "465"})
 
+
+# TODO: Write tests for connector class
 
 if __name__ == '__main__':
     unittest.main()
