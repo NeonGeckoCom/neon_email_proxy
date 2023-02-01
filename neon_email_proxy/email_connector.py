@@ -29,11 +29,10 @@
 import pika.channel
 
 from typing import Optional
-from neon_utils import LOG
 from neon_utils.socket_utils import b64_to_dict, dict_to_b64
-
-from neon_email_proxy.email_utils import send_ai_email
+from ovos_utils.log import LOG
 from neon_mq_connector.connector import MQConnector
+from neon_email_proxy.email_utils import send_ai_email, write_out_email_attachments
 
 
 class NeonEmailConnector(MQConnector):
@@ -52,8 +51,13 @@ class NeonEmailConnector(MQConnector):
     @staticmethod
     def handle_send_email(**kwargs):
         try:
+            attachments = kwargs.get("attachments")
+            if attachments:
+                att_files = write_out_email_attachments(attachments)
+            else:
+                att_files = None
             send_ai_email(kwargs["subject"], kwargs["body"], kwargs["recipient"],
-                          kwargs.get("attachments"), kwargs.get("email_config"))
+                          att_files, kwargs.get("email_config"))
             return {"success": True}
         except Exception as e:
             LOG.error(e)
