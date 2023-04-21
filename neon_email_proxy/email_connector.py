@@ -29,10 +29,11 @@
 import pika.channel
 
 from typing import Optional
-from neon_utils.socket_utils import b64_to_dict, dict_to_b64
 from ovos_utils.log import LOG
 from neon_mq_connector.connector import MQConnector
-from neon_email_proxy.email_utils import send_ai_email, write_out_email_attachments
+from neon_mq_connector.utils.network_utils import b64_to_dict, dict_to_b64
+from neon_email_proxy.email_utils import send_ai_email, \
+    write_out_email_attachments
 
 
 class NeonEmailConnector(MQConnector):
@@ -56,8 +57,9 @@ class NeonEmailConnector(MQConnector):
                 att_files = write_out_email_attachments(attachments)
             else:
                 att_files = None
-            send_ai_email(kwargs["subject"], kwargs["body"], kwargs["recipient"],
-                          att_files, kwargs.get("email_config"))
+            send_ai_email(kwargs["subject"], kwargs["body"],
+                          kwargs["recipient"], att_files,
+                          kwargs.get("email_config"))
             return {"success": True}
         except Exception as e:
             LOG.error(e)
@@ -88,14 +90,17 @@ class NeonEmailConnector(MQConnector):
                 # queue declare is idempotent, just making sure queue exists
                 channel.queue_declare(queue='neon_emails_output')
 
-                channel.basic_publish(exchange='',
-                                      routing_key=request.get('routing_key', 'neon_emails_output'),
-                                      body=data,
-                                      properties=pika.BasicProperties(expiration='1000')
-                                      )
+                channel.basic_publish(
+                    exchange='',
+                    routing_key=request.get('routing_key',
+                                            'neon_emails_output'),
+                    body=data,
+                    properties=pika.BasicProperties(expiration='1000')
+                )
                 channel.basic_ack(method.delivery_tag)
             else:
-                raise TypeError(f'Invalid body received, expected: bytes string; got: {type(body)}')
+                raise TypeError(f'Invalid body received, expected bytes string;'
+                                f' got: {type(body)}')
         except Exception as e:
             LOG.error(f"message_id={message_id}")
             LOG.error(e)
@@ -107,5 +112,6 @@ class NeonEmailConnector(MQConnector):
         self.run()
 
     def pre_run(self, **kwargs):
-        self.register_consumer("neon_emails_consumer", self.vhost, 'neon_emails_input',
+        self.register_consumer("neon_emails_consumer", self.vhost,
+                               'neon_emails_input',
                                self.handle_email_request, auto_ack=False)

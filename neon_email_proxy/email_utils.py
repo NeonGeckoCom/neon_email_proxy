@@ -32,12 +32,27 @@ from smtplib import SMTPAuthenticationError
 from os import path
 from typing import Optional
 from tempfile import mkdtemp
+from ovos_utils.log import LOG
+from ovos_config.config import Configuration
 from neon_utils.file_utils import decode_base64_string_to_file
-from neon_utils.logger import LOG
-from neon_utils.configuration_utils import NGIConfig, init_config_dir
+from neon_utils.configuration_utils import NGIConfig, init_config_dir, \
+    get_config_dir
 
-init_config_dir()
-CONFIG = NGIConfig("ngi_auth_vars").get("emails")
+_CONFIG = None
+
+
+def get_config():
+    global _CONFIG
+    if not _CONFIG:
+        init_config_dir()
+        legacy_config_file = path.join(get_config_dir(), "ngi_auth_vars.yml")
+        if path.isfile(legacy_config_file):
+            LOG.warning(f"Legacy configuration found at: {legacy_config_file}")
+            _CONFIG = NGIConfig("ngi_auth_vars").get("emails")
+        else:
+            _CONFIG = Configuration().get("keys", {}).get("emails")
+
+    return _CONFIG
 
 
 def write_out_email_attachments(attachments: dict) -> list:
@@ -61,7 +76,8 @@ def write_out_email_attachments(attachments: dict) -> list:
 
 
 def send_ai_email(subject: str, body: str, recipient: str,
-                  attachments: Optional[list] = None, email_config: dict = None):
+                  attachments: Optional[list] = None,
+                  email_config: dict = None):
     """
     Email a user. Email config may be provided or read from configuration
     :param subject: Email subject
@@ -70,7 +86,7 @@ def send_ai_email(subject: str, body: str, recipient: str,
     :param attachments: Optional list of attachment file paths
     :param email_config: Optional SMTP config to use as sender
     """
-    config = email_config or CONFIG
+    config = email_config or get_config()
     try:
         mail = config['mail']
         password = config['pass']
