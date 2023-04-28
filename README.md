@@ -15,11 +15,27 @@ dict of attachments should map string attachment names to string base-64 encoded
 >```
 
 ## Docker Configuration
-When running this as a docker container, the path to configuration files should be mounted to `/config`. This container 
-expects `mq_config.json` to contain service `neon_email_proxy` and `ngi_auth_vars.yml` to contain dict `emails`.
+When running this as a docker container, the `XDG_CONFIG_HOME` envvar is set to `/config`.
+A configuration file at `/config/neon/diana.yaml` is required and should look like:
+```yaml
+MQ:
+  port: <MQ Port>
+  server: <MQ Hostname or IP>
+  users:
+    neon_email_proxy:
+      password: <neon_email user's password>
+      user: neon_email
+keys:
+  emails:
+    host: <smtp hostname>
+    mail: <email address>
+    pass: <email password>
+    port: <string smtp port>
+```
 
 For example, if your configuration resides in `~/.config`:
 ```shell
 export CONFIG_PATH="/home/${USER}/.config"
 docker run -v ${CONFIG_PATH}:/config neon_email_proxy
 ```
+> Note: If connecting to a local MQ server, you may need to specify `--network host`
