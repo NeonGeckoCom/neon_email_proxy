@@ -44,14 +44,19 @@ _CONFIG = None
 def get_config():
     global _CONFIG
     if not _CONFIG:
-        init_config_dir()
-        legacy_config_file = path.join(get_config_dir(), "ngi_auth_vars.yml")
-        if path.isfile(legacy_config_file):
-            LOG.warning(f"Legacy configuration found at: {legacy_config_file}")
-            _CONFIG = NGIConfig("ngi_auth_vars").get("emails")
-        else:
+        try:
+            init_config_dir()
+            legacy_config_file = path.join(get_config_dir(),
+                                           "ngi_auth_vars.yml")
+            if path.isfile(legacy_config_file):
+                LOG.warning(f"Legacy configuration found at: "
+                            f"{legacy_config_file}")
+                _CONFIG = NGIConfig("ngi_auth_vars").get("emails")
+            else:
+                _CONFIG = Configuration().get("keys", {}).get("emails")
+        except Exception as e:
+            LOG.exception(e)
             _CONFIG = Configuration().get("keys", {}).get("emails")
-
     return _CONFIG
 
 
