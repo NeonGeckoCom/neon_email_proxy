@@ -33,10 +33,10 @@ from os import path
 from typing import Optional
 from tempfile import mkdtemp
 from ovos_utils.log import LOG, log_deprecation
+from ovos_config.locations import get_xdg_config_save_path
 from ovos_config.config import Configuration
 from neon_utils.file_utils import decode_base64_string_to_file
-from neon_utils.configuration_utils import NGIConfig, init_config_dir, \
-    get_config_dir
+from neon_utils.configuration_utils import NGIConfig, init_config_dir
 
 _CONFIG = None
 
@@ -46,7 +46,7 @@ def get_config():
     if not _CONFIG:
         try:
             init_config_dir()
-            legacy_config_file = path.join(get_config_dir(),
+            legacy_config_file = path.join(get_xdg_config_save_path(),
                                            "ngi_auth_vars.yml")
             if path.isfile(legacy_config_file):
                 log_deprecation(f"Legacy configuration found at: "
