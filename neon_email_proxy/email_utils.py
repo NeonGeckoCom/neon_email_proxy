@@ -32,7 +32,7 @@ from smtplib import SMTPAuthenticationError
 from os import path
 from typing import Optional
 from tempfile import mkdtemp
-from ovos_utils.log import LOG
+from ovos_utils.log import LOG, log_deprecation
 from ovos_config.config import Configuration
 from neon_utils.file_utils import decode_base64_string_to_file
 from neon_utils.configuration_utils import NGIConfig, init_config_dir, \
@@ -49,8 +49,8 @@ def get_config():
             legacy_config_file = path.join(get_config_dir(),
                                            "ngi_auth_vars.yml")
             if path.isfile(legacy_config_file):
-                LOG.warning(f"Legacy configuration found at: "
-                            f"{legacy_config_file}")
+                log_deprecation(f"Legacy configuration found at: "
+                                f"{legacy_config_file}", "1.0.0")
                 _CONFIG = NGIConfig("ngi_auth_vars").get("emails")
             else:
                 _CONFIG = Configuration().get("keys", {}).get("emails")
@@ -100,7 +100,7 @@ def send_ai_email(subject: str, body: str, recipient: str,
     except (TypeError, KeyError):
         LOG.error(f"Invalid Config: {config}")
         raise RuntimeError("Invalid email auth config")
-    LOG.debug(f"send {subject} to {recipient}")
+    LOG.info(f"send {subject} to {recipient}")
     try:
         with yagmail.SMTP(mail, password, host, port) as yag:
             yag.send(to=recipient, subject=subject, contents=body,
