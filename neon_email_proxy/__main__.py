@@ -27,8 +27,11 @@
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from ovos_utils import wait_for_exit_signal
+from ovos_utils.log import init_service_logger
 
 from neon_email_proxy.email_connector import NeonEmailConnector
+
+init_service_logger("neon-email-proxy")
 
 
 def run_mq_handler():

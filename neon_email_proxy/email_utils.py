@@ -32,27 +32,40 @@ from smtplib import SMTPAuthenticationError
 from os import path
 from typing import Optional
 from tempfile import mkdtemp
+from ovos_utils.log import LOG, log_deprecation
+from ovos_config.locations import get_xdg_config_save_path
+from ovos_config.config import Configuration
 from neon_utils.file_utils import decode_base64_string_to_file
-from neon_utils.logger import LOG
-from neon_utils.configuration_utils import get_neon_auth_config
+from neon_utils.configuration_utils import NGIConfig, init_config_dir
 
-CONFIG = get_neon_auth_config()["emails"]
+_CONFIG = None
 
 
-def write_out_email_attachments(message) -> list:
+def get_config():
+    global _CONFIG
+    if not _CONFIG:
+        try:
+            init_config_dir()
+            legacy_config_file = path.join(get_xdg_config_save_path(),
+                                           "ngi_auth_vars.yml")
+            if path.isfile(legacy_config_file):
+                log_deprecation(f"Legacy configuration found at: "
+                                f"{legacy_config_file}", "1.0.0")
+                _CONFIG = NGIConfig("ngi_auth_vars").get("emails")
+            else:
+                _CONFIG = Configuration().get("keys", {}).get("emails")
+        except Exception as e:
+            LOG.exception(e)
+            _CONFIG = Configuration().get("keys", {}).get("emails")
+    return _CONFIG
+
+
+def write_out_email_attachments(attachments: dict) -> list:
     """
-    Write out email attachments from the passed message and return the list of written files
-    :param message: Message associated with email request
+    Write out email attachments to local files
+    :param attachments: dict of attachment file names to string-encoded bytes
     :return: list of paths to attachment files
     """
-    email = message.data["email"]
-    title = message.data["title"]
-    body = message.data["body"]
-    attachments = message.data.get("attachments")
-
-    LOG.debug(f"Send {title} to {email}:")
-    LOG.debug(body)
-
     att_files = []
     # Write out attachment message data to files
     if attachments:
@@ -68,16 +81,17 @@ def write_out_email_attachments(message) -> list:
 
 
 def send_ai_email(subject: str, body: str, recipient: str,
-                  attachments: Optional[list] = None, email_config: dict = None):
+                  attachments: Optional[list] = None,
+                  email_config: dict = None):
     """
-    Send an email to a user. Email config may be provided or read from configuration
+    Email a user. Email config may be provided or read from configuration
     :param subject: Email subject
     :param body: Email body
     :param recipient: Recipient email address (or list of email addresses)
     :param attachments: Optional list of attachment file paths
     :param email_config: Optional SMTP config to use as sender
     """
-    config = email_config or CONFIG
+    config = email_config or get_config()
     try:
         mail = config['mail']
         password = config['pass']
@@ -86,10 +100,11 @@ def send_ai_email(subject: str, body: str, recipient: str,
     except (TypeError, KeyError):
         LOG.error(f"Invalid Config: {config}")
         raise RuntimeError("Invalid email auth config")
-    LOG.debug(f"send {subject} to {recipient}")
+    LOG.info(f"send {subject} to {recipient}")
     try:
         with yagmail.SMTP(mail, password, host, port) as yag:
-            yag.send(to=recipient, subject=subject, contents=body, attachments=attachments)
+            yag.send(to=recipient, subject=subject, contents=body,
+                     attachments=attachments)
     except SMTPAuthenticationError as e:
         LOG.error(f"Invalid credentials provided in config: {config}")
         raise e

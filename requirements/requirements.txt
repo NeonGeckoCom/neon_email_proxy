@@ -1,3 +1,5 @@
 yagmail~=0.11.224
-neon_utils~=0.16
-neon_mq_connector~=0.3
+ovos-utils~=0.0.34
+ovos-config~=0.0.10
+neon_utils~=1.0
+neon_mq_connector~=0.7
