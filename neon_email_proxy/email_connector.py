@@ -29,6 +29,7 @@
 import pika.channel
 
 from typing import Optional
+from ovos_config import Configuration
 from ovos_utils.log import LOG
 from neon_mq_connector.connector import MQConnector
 from neon_mq_connector.utils.network_utils import b64_to_dict, dict_to_b64
@@ -48,22 +49,35 @@ class NeonEmailConnector(MQConnector):
         """
         super().__init__(config, service_name)
         self.vhost = '/neon_emails'
+        _config = Configuration().get("neon_email_proxy") or dict()
+        self._allow_attachments = _config.get("allow_attachments", True)
+        self._allowed_subjects = (_config.get("allowed_subjects") or
+                                  ["LLM Conversation", "Neon AI Diagnostics",
+                                   "Wolfram|Alpha Source"])
 
-    @staticmethod
-    def handle_send_email(**kwargs):
+    def handle_send_email(self, **kwargs):
         try:
             attachments = kwargs.get("attachments")
-            if attachments:
+            if attachments and self._allow_attachments:
                 att_files = write_out_email_attachments(attachments)
             else:
+                if not self._allow_attachments:
+                    LOG.warning("Attachments not allowed in configuration")
                 att_files = None
+            if (self._allowed_subjects and kwargs["subject"] not in
+                    self._allowed_subjects):
+                LOG.warning(f"{kwargs['subject']} not in allowed subjects: "
+                            f"{self._allowed_subjects}")
+                return {"success": False,
+                        "reason": "Invalid subject"}
             send_ai_email(kwargs["subject"], kwargs["body"],
                           kwargs["recipient"], att_files,
                           kwargs.get("email_config"))
             return {"success": True}
         except Exception as e:
             LOG.error(e)
-            return {"success": False}
+            return {"success": False,
+                    "reason": str(e)}
 
     def handle_email_request(self,
                              channel: pika.channel.Channel,
