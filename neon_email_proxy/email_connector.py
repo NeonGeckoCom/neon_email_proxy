@@ -69,7 +69,7 @@ class NeonEmailConnector(MQConnector):
                 LOG.warning(f"{kwargs['subject']} not in allowed subjects: "
                             f"{self._allowed_subjects}")
                 return {"success": False,
-                        "reason": "Invalid subject"}
+                        "error": "Invalid subject"}
             send_ai_email(kwargs["subject"], kwargs["body"],
                           kwargs["recipient"], att_files,
                           kwargs.get("email_config"))
@@ -77,7 +77,7 @@ class NeonEmailConnector(MQConnector):
         except Exception as e:
             LOG.error(e)
             return {"success": False,
-                    "reason": str(e)}
+                    "error": str(e)}
 
     def handle_email_request(self,
                              channel: pika.channel.Channel,
