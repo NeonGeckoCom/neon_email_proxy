@@ -105,6 +105,8 @@ def send_ai_email(subject: str, body: str, recipient: str,
         with yagmail.SMTP(mail, password, host, port) as yag:
             yag.send(to=recipient, subject=subject, contents=body,
                      attachments=attachments)
+            LOG.debug(f"Sent email with subject {subject} "
+                      f"{'with attachments' if attachments else ''}.")
     except SMTPAuthenticationError as e:
         LOG.error(f"Invalid credentials provided in config: {config}")
         raise e
