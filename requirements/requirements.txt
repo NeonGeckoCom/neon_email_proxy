@@ -2,4 +2,4 @@ yagmail~=0.11
 ovos-utils~=0.0,>=0.0.34
 ovos-config~=0.1
 neon-utils[sentry]~=1.0
-neon-mq-connector~=0.8
+neon-mq-connector~=0.8,>=0.8.1a3
