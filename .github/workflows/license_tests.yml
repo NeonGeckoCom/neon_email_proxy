@@ -9,4 +9,4 @@ jobs:
   license_tests:
     uses: neongeckocom/.github/.github/workflows/license_tests.yml@master
     with:
-      packages-exclude: '^(neon-email-proxy|tqdm|cssutils).*'
+      packages-exclude: '^(neon-email-proxy|tqdm|cssutils|click|RapidFuzz|setuptools|typing-inspection|typing_extensions|urllib).*'
